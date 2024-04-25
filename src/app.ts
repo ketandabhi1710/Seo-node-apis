@@ -58,36 +58,6 @@ app.post("/dynamic-post-publish", async (req: any, res: Response) => {
   }
 });
 
-app.post("/dynamic-post-publish-oncostore", async (req: any, res: Response) => {
-  try {
-    const contentLength = req.get("Content-Length");
-    console.log("Request payload size:: oncostore :: ", contentLength, "bytes");
-    const { baseurl, username, password, timeInterval, dataArray } = req.body;
-    console.log(
-      "dynamic-post-publish-oncostore :: oncoStore :: req.body :: creds",
-      baseurl,
-      username,
-      password,
-      timeInterval
-    );
-    await sendApiRequestOncoStore(0, dataArray, {
-      baseurl,
-      username,
-      password,
-      timeInterval,
-    }).then(() => {
-      console.log("request execution complete :: OncoStore ");
-      res.end();
-    });
-  } catch (error) {
-    console.log("Error :: Something went Wrong :: OncoStore :: ", error);
-  }
-});
-
-// app.listen(port, () => {
-//   console.log(`Express is listening at http://localhost:${port}`);
-// });
-
 server.listen(port, () => console.log(`Listening on port ${port}`));
 
 const validHeaders = [
@@ -203,55 +173,6 @@ const sendApiRequest = async (index?: any, data?: any, credentials?: any) => {
     setTimeout(() => {
       console.log("in timeout :: Seo :: index", index);
       sendApiRequest(index + 1, dataArray, credentials);
-    }, timeInterval * 1000);
-  }
-};
-
-const sendApiRequestOncoStore = async (
-  index?: any,
-  data?: any,
-  credentials?: any
-) => {
-  const dataArray: any = data.filter((item: any) => {
-    return item.isChecked === true;
-  });
-
-  let url: any;
-  const { username, password, baseurl, timeInterval } = credentials;
-  console.log("index, dataArray.length :: OncoStore", index, dataArray.length);
-  if (index < dataArray.length) {
-    const currentItem: any = dataArray[index];
-    url = `${baseurl}/wp-json/wp/v2/posts`;
-
-    console.log("currentItem :: OncoStore ", currentItem);
-    console.log("url :: OncoStore ", url);
-    try {
-      const response = await axios.post(`${url}`, currentItem, {
-        auth: { username, password },
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log("response.data :: Oncostore ", response.data);
-
-      console.log("oncoStore :: post :: Response Obj:: ", {
-        id: response.data.post_id,
-        title: response.data.message,
-        status: response.data.status,
-      });
-
-      io.emit("postPublishedOncoStore", {
-        id: response.data.post_id,
-        title: response.data.message,
-        status: response.data.status,
-      });
-    } catch (error) {
-      console.log("error :: in if ::", error);
-    }
-    setTimeout(() => {
-      console.log("in timeout :: oncostore :: index", index);
-      sendApiRequestOncoStore(index + 1, dataArray, credentials);
     }, timeInterval * 1000);
   }
 };
